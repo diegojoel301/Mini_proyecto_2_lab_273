@@ -1,5 +1,4 @@
-import socket
-import sqlite3
+# -*- coding: utf-8 -*-
 import socket
 import sqlite3
 from urllib.parse import parse_qs, urlparse, unquote_plus
@@ -44,7 +43,7 @@ def select_alumnos():
     for row in cursor:
         ci = row[0]
         html += f'<tr><td>{ci}</td><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td>'
-        html += f'<td><a href="editar_alumno?ci={ci}">Editar</a><a href="eliminar_alumno?ci={ci}">Eliminar</a></td></tr>'
+        html += f'<td><a href="editar_alumno?Ci={ci}&Nombre={row[1]}&Apellido={row[2]}&fecha_nac={row[3]}">Editar</a><a href="eliminar_alumno?ci={ci}">Eliminar</a></td></tr>'
     html += '</table>'
 
     # Cerramos la conexión
@@ -64,7 +63,7 @@ def select_asignatura():
     html = '<table><tr><th>Sigla</th><th>Nombre</th><th>Semestre</th><th>Acciones</th></tr>'
     for row in cursor:
         html += f'<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td>'
-        html += f'<td><a href="editar_asignatura?sigla={row[0]}&nombre={row[1]}&semestre={row[2]}">Editar</a></td>'
+        html += f'<td><a href="editar_asignatura?Sigla={row[0]}&Nombre={row[1]}&Semestre={row[2]}">Editar</a></td>'
         html += f'<td><a href="eliminar_asignatura?sigla={row[0]}">Eliminar</a></td></tr>'
     html += '</table>'
 
@@ -89,18 +88,6 @@ def insert_alumno(Ci, Nombre, Apellido, fecha_nac):
     # Cerramos la conexión
     conn.close()
 
-def eliminar_alumno(id):
-    # Conexión a la base de datos
-    conn = sqlite3.connect('academico.db')
-
-    # Eliminamos el registro correspondiente
-    conn.execute(f"DELETE FROM alumno WHERE CI='{id}'")
-
-
-    # Guardamos los cambios y cerramos la conexión
-    conn.commit()
-    conn.close()
-
 def insert_asignatura(Sigla, Nombre, Semestre):
     # Conexión a la base de datos
     conn = sqlite3.connect('academico.db')
@@ -114,12 +101,38 @@ def insert_asignatura(Sigla, Nombre, Semestre):
     # Cerramos la conexión
     conn.close()
 
-def eliminar_asignatura(sigla):
+
+def eliminar_alumno(id):
     # Conexión a la base de datos
     conn = sqlite3.connect('academico.db')
 
     # Eliminamos el registro correspondiente
-    conn.execute(f'DELETE FROM asignatura WHERE Sigla LIKE "{sigla}"')
+    conn.execute(f"DELETE FROM alumno WHERE CI='{id}'")
+
+
+    # Guardamos los cambios y cerramos la conexión
+    conn.commit()
+    conn.close()
+
+def editar_alumno(ci, nombre, apellido, fecha_nac):
+    # Conexión a la base de datos
+    conn = sqlite3.connect('academico.db')
+
+    # Eliminamos el registro correspondiente
+    conn.execute(f"UPDATE alumno SET Nombre='{nombre}', Apellido='{apellido}', fecha_nac='{fecha_nac}' WHERE CI='{ci}'")
+
+
+    # Guardamos los cambios y cerramos la conexión
+    conn.commit()
+    conn.close()
+
+def eliminar_asignatura(sigla):
+     # Conexión a la base de datos
+    conn = sqlite3.connect('academico.db')
+
+    # Eliminamos el registro correspondiente
+    conn.execute(f"DELETE FROM asignatura WHERE Sigla='{sigla}'")
+
 
     # Guardamos los cambios y cerramos la conexión
     conn.commit()
@@ -135,6 +148,20 @@ def actualizar_asignatura(sigla, nombre, semestre):
     conn.commit()
     conn.close()
 
+def mostrar():
+    # codigo para mostrar tabla alumno en pagina web
+                html1 = select_alumnos()
+
+                # codigo para mostrar tabla asignatura en pagina web
+                html2 = select_asignatura()
+
+                # Cargamos el archivo HTML
+                with open('index.html', 'r') as file:
+                    html = file.read()
+
+                # Reemplazar las variables en la cadena de formato
+                html = html.format(html1=html1, html2=html2)
+                return html
 def main():
     # Creamos un objeto de socket
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -153,8 +180,6 @@ def main():
     # Creamos la tabla de contactos
     create_table()
 
-    redirect_asignaturas = False
-
     while True:
 
         # Esperamos a que llegue una conexión
@@ -168,135 +193,159 @@ def main():
         print(request)
 
         #cargamos otra pagina
-        if request.startswith('GET /crear_asignatura'):
+        if request.startswith('GET /insertar_alumno.html'):
             # Cargamos el archivo HTML
-            with open('insertar_asignatura.html', 'r') as file:
+            with open('insertar_alumno.html', 'r') as file:
                 html = file.read()
-            # Creamos una respuesta HTTP para el cliente
-            print("pasa")
             #response = 'HTTP/1.1 200 OK\nContent-Type: text/html\n\n'
-            response = html
-        elif request.startswith('GET /editar_asignatura'):
-            # Cargamos el archivo HTML
-            #with open('actualizar_asignatura.html', 'r') as file:
-            #    html = file.read()
-            # Creamos una respuesta HTTP para el cliente
-            #print("pasa")
-            #response = 'HTTP/1.1 200 OK\nContent-Type: text/html\n\n'
-            #response = html
-
-            url_parts = urlparse(request)
-            query_params = parse_qs(url_parts.query)
-            sigla = query_params.get('sigla', [''])[0].split(' ')[0]
-            nombre = unquote_plus(query_params.get('nombre', [''])[0].split(' ')[0])
-            semestre = query_params.get('semestre', [''])[0].split(' ')[0]
-            print(sigla, nombre, semestre)
-
-            html = ""
-            html += '<!DOCTYPE html>'
-            html += '<html>'
-            html += '<head>'
-            html += '<meta charset="utf-8">'
-            html += '<meta name="viewport" content="width=device-width, initial-scale=1">'
-            html += '<title>Insertar Asignatura</title>'
-            html += '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">'
-            html += '</head>'
-            html += '<html>'
-            html += '<body>'
-            html += '<form method="post" action="actualizar_materia">'
-            html += '<label for="sigla">Sigla:</label>'
-            html += f'<input type="text" id="Sigla" name="sigla" value = "{sigla}" readonly><br>'
-            html += '<label for="nombre">Nombre de Asignatura:</label>'
-            html += f'<input type="text" id="nombre" name="nombre" value = "{nombre}" required><br>'
-            html += '<label for="semestre">Semestre</label>'
-            html += f'<input type="text" id="semestre" name="semestre" value = "{semestre}" required><br>'
-            html += '<input type="submit" value="Enviar" class="btn btn-primary"><br>'
-            html += '</form>'
-            html += '<a href="/asignaturas" class="btn btn-success">Volver</a>'
-            html += '</body>'
-            html += '</html>'
-
-            print(html)
-
-            #para index.
-        elif request.startswith('GET /asignaturas'):
-
-            # codigo para mostrar tabla asignatura en pagina web
-            html1 = select_asignatura()
-
-            # Cargamos el archivo HTML
-            with open('asignaturas.html', 'r') as file:
-                html = file.read()
-
-            # Reemplazar las variables en la cadena de formato
-            html += html1
-
-            html += '<a href="/crear_asignatura" class="btn btn-info" role="button">Crear Asignatura</a>'
-
-            html += "</body></html>"
-
-            print(html)
-
-
-        #eliminar asignatura
-        elif request.startswith('GET /eliminar_asignatura'):
-            # Obtener los datos de la asignatura
-            url_parts = urlparse(request)
-            query_params = parse_qs(url_parts.query)
-            sigla = query_params.get('sigla', [''])[0].split(' ')
-            print(sigla)
-
-            eliminar_asignatura(sigla[0])
-            
-            redirect_asignaturas = True
-
-        else:
-                # codigo para mostrar tabla alumno en pagina web
-                html1 = select_alumnos()
-
-                # codigo para mostrar tabla asignatura en pagina web
-                html2 = select_asignatura()
-
-                # Cargamos el archivo HTML
-                with open('index.html', 'r') as file:
-                    html = file.read()
-
-                # Reemplazar las variables en la cadena de formato
-                html = html.format(html1=html1, html2=html2)
-
-
-        if request.startswith('POST /insertar_materia'):
-            # Si la solicitud es un POST, obtenemos los datos del formulario
-            envio = request.split('\r\n')[-1]
-            sigla = envio.split('&')[0].split('=')[1]
-            nombre_asignatura = unquote_plus(envio.split('&')[1].split('=')[1])
-            semestre = envio.split('&')[2].split('=')[1]
-
-            insert_asignatura(sigla, nombre_asignatura, semestre)
-
-            redirect_asignaturas = True
-
-        if request.startswith('POST /actualizar_materia'):
-            # Si la solicitud es un POST, obtenemos los datos del formulario
-            envio = request.split('\r\n')[-1]
-            sigla = envio.split('&')[0].split('=')[1]
-            nombre_asignatura = envio.split('&')[1].split('=')[1]
-            semestre = envio.split('&')[2].split('=')[1]
-
-            actualizar_asignatura(sigla, nombre_asignatura, semestre)
-
-            redirect_asignaturas = True
-
-
-        if not redirect_asignaturas:
-            # Creamos una respuesta HTTP para el cliente
-            response = 'HTTP/1.1 200 OK\nContent-Type: text/html\n\n'
-            
             response += html
-            print(response)
         else:
-            response = 'HTTP/1.1 301 Redireccion a Asignaturas\r\nLocation: /asignaturas\n\r\n\r'
-            redirect_asignaturas = False
+            #para index.
+            if request.startswith('GET /index.html'):
+                html=mostrar()
+
+            else:
+                #eliminar alumno
+                if request.startswith('GET /eliminar_alumno'):
+                    # Obtener el CI del alumno
+                    url_parts = urlparse(request)
+                    query_params = parse_qs(url_parts.query)
+                    ci = query_params.get('ci', [''])[0].split(' ')
+
+                    eliminar_alumno(ci[0])
+                    html=mostrar()
+                else:
+                    #editar alumno
+                    if request.startswith('GET /editar_alumno'):
+                        # Obtener los parámetros del GET
+                        parametros = request.split(' ')[1]
+                        query_params = parse_qs(parametros.split('?')[1])
+                        ci = query_params.get('Ci', [''])[0]
+                        nomb = query_params.get('Nombre', [''])[0].strip()
+                        ape = query_params.get('Apellido', [''])[0].strip()
+                        fech = query_params.get('fecha_nac', [''])[0].strip()
+
+
+                        # Cargar el archivo HTML
+                        with open('editar_alumno.html', 'r') as file:
+                            html = file.read()
+
+                        # Reemplazar las variables en la cadena de formato
+                        html = html.format(ci=ci, Nombre=nomb, Apellido=ape, Fecha_nac=fech)
+
+                    else:
+                        #si da en editar_asignatura
+                        if request.startswith('GET /editar_asignatura'):
+                           # Obtener los parámetros del GET
+                            parametros = request.split(' ')[1]
+                            query_params = parse_qs(parametros.split('?')[1])
+                            Sigla = query_params.get('Sigla', [''])[0]
+                            Nombre = ' '.join(unquote_plus(query_params.get('Nombre', [''])[0]).split())
+                            semestre = query_params.get('Semestre', [''])[0].strip()
+
+                            # Cargamos el archivo HTML
+                            with open('actualizar_asignatura.html', 'r') as file:
+                                html = file.read()
+
+                            # Reemplazar las variables en la cadena de formato
+                            html = html.format(Sigla=Sigla, Nombre=Nombre, Semestre=semestre)
+                        else:
+                            #eliminar asignatura
+                            if request.startswith('GET /eliminar_asignatura'):
+                                # Obtener los datos de la asignatura
+                                url_parts = urlparse(request)
+                                query_params = parse_qs(url_parts.query)
+                                sigla = query_params.get('sigla', [''])[0].split(' ')
+                                print(sigla[0]+"/-*/*-//*-*-//*-/*-*-/*-/*-/*-/")
+
+                                eliminar_asignatura(sigla[0])
+                                
+                                redirect_asignaturas = True
+                                html=mostrar()
+                            else:
+                                #insertar asignatura
+                                if request.startswith('GET /insertar_asignatura.html'):
+                                    # Cargamos el archivo HTML
+                                    with open('insertar_asignatura.html', 'r') as file:
+                                        html = file.read()
+                                    # Creamos una respuesta HTTP para el cliente
+                                    print("pasa")
+                                    response += html
+                                else:
+                                    html=mostrar()
+
+        if request.startswith('POST /insertar_alumno'):
+            # Si la solicitud es un POST, obtenemos los datos del formulario
+            envio = request.split('\r\n')[-1]
+            Ci = envio.split('&')[0].split('=')[1]
+            nombre = envio.split('&')[1].split('=')[1]
+            apellido = envio.split('&')[2].split('=')[1]
+            fecha_nac = envio.split('&')[3].split('=')[1]
+
+
+            # Insertamos el alumno en la base de datos
+            insert_alumno(Ci,nombre, apellido, fecha_nac)
+
+            html = mostrar()
+
+            # Agregamos un mensaje de confirmación al HTML
+            html += '<p>Alumno registrado correctamente.</p>'
+
+        if request.startswith('POST /insertar_asignatura'):
+            # Si la solicitud es un POST, obtenemos los datos del formulario
+            envio = request.split('\r\n')[-1]
+            Sigla = envio.split('&')[0].split('=')[1]
+            nombre = envio.split('&')[1].split('=')[1]
+            Semestre = envio.split('&')[2].split('=')[1]
+
+            nombre = nombre.replace("+", " ")
+            # Insertamos el alumno en la base de datos
+            insert_asignatura(Sigla, nombre, Semestre)
+
+            html = mostrar()
+
+            # Agregamos un mensaje de confirmación al HTML
+            html += '<p>Asignatura registrada correctamente.</p>'
+
+        #editar
+        if request.startswith('POST /editar_alumno'):
+            # Si la solicitud es un POST, obtenemos los datos del formulario
+            envio = request.split('\r\n')[-1]
+            Ci = envio.split('&')[0].split('=')[1]
+            nombre = envio.split('&')[1].split('=')[1]
+            apellido = envio.split('&')[2].split('=')[1]
+            fecha_nac = envio.split('&')[3].split('=')[1]
+
+
+            # Insertamos el alumno en la base de datos
+            editar_alumno(Ci,nombre, apellido, fecha_nac)
+
+            #actualiza
+            html = mostrar()
+
+            # Agregamos un mensaje de confirmación al HTML
+            html += '<p>Alumno editado correctamente.</p>'
+
+        if request.startswith('POST /editar_asignatura'):
+            # Si la solicitud es un POST, obtenemos los datos del formulario
+            envio = request.split('\r\n')[-1]
+            Sigla = envio.split('&')[0].split('=')[1]
+            nombre = envio.split('&')[1].split('=')[1]
+            Semestre = envio.split('&')[2].split('=')[1]
+
+            nombre = nombre.replace("+", " ")
+            # Insertamos el alumno en la base de datos
+            actualizar_asignatura(Sigla, nombre, Semestre)
+
+            #actualiza
+            html = mostrar()
+
+            # Agregamos un mensaje de confirmación al HTML
+            html += '<p>Asignatura editado correctamente.</p>'
+
+        # Creamos una respuesta HTTP para el cliente
+        response = 'HTTP/1.1 200 OK\nContent-Type: text/html\n\n'
+        response += html
 
         # Enviamos la respuesta al cliente
         client_socket.sendall(response.encode())
