@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Editar asignatura</title>
+</head>
+<body>
+	<h1>Inscribir Alumno</h1>
+
+	<form method="POST" action="./mod_notas">
+		<label for="Ci">Ci:</label>
+		<input type="text" id="Ci" name="Ci" value={ci} readonly>
+        <br>
+        <label for="nombre">Nombre:</label>
+		<input type="text" id="nombre" name="nombre" value="{nombre}" readonly>
+        <br>
+        <label for="apellido">Apellido:</label>
+		<input type="text" id="apellido" name="apellido" value="{apellido}" readonly>
+        <br>
+        <label for="sigla">Sigla Asignatura:</label>
+		<input type="text" id="sigla" name="sigla" value="{sigla}" readonly>
+        <br>
+        <label for="nota1">Nota 1:</label>
+		<input type="number" id="nota1" name="nota1" value="{nota1}">
+        <br>
+        <label for="nota1">Nota 2:</label>
+		<input type="number" id="nota2" name="nota2" value="{nota2}">
+        <br>
+        <label for="notafinal">Nota Final:</label>
+		<input type="number" id="notafinal" name="notafinal" value="{notafinal}">
+        <br>
+        <input type="submit" value="Enviar">
+
+	</form>
+	<a href="index.html">Volver</a>
+</body>
+</html>
