@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Alumnos de asignatura</title>
+</head>
+<body>
+	<h1>Ingrese la sigla de la asignatura para ver todos sus alumnos:</h1>
+
+	<form method="POST" action="./asignatura_alumno">
+		<label for="Ci">Sigla:</label>
+		<input type="text" id="Sigla" name="Sigla">
+        <br>
+        <input type="submit" value="Enviar">
+
+	</form>
+	<div id="resultado">{tabla}</div>
+	<a href="index.html">Volver</a>
+</body>
+</html>

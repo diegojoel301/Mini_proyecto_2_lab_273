@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Alumno asignaturas</title>
+</head>
+<body>
+	<h1>Ingrese el ci del alumno para ver las asignaturas inscritas:</h1>
+
+	<form method="POST" action="./alumno_asignatura">
+		<label for="Ci">Ci:</label>
+		<input type="text" id="Ci" name="Ci">
+        <br>
+        <input type="submit" value="Enviar">
+
+	</form>
+	<div id="resultado">{tabla}</div>
+	<a href="index.html">Volver</a>
+</body>
+</html>

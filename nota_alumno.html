@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Notas Alumno por asignatura</title>
+</head>
+<body>
+	<h1>Ingrese la sigla de la asignatura y el ci del alumno:</h1>
+
+	<form method="POST" action="./nota_alumno">
+		<label for="Ci">Sigla:</label>
+		<input type="text" id="Sigla" name="Sigla"><br>
+		<label for="Ci">Ci:</label>
+		<input type="text" id="Ci" name="Ci">
+        <br>
+        <input type="submit" value="Enviar">
+
+	</form>
+	<div id="resultado">{tabla}</div>
+	<a href="index.html">Volver</a>
+</body>
+</html>
