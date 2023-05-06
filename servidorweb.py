@@ -43,7 +43,7 @@ def select_alumnos():
     for row in cursor:
         ci = row[0]
         html += f'<tr><td>{ci}</td><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td>'
-        html += f'<td><a href="editar_alumno?Ci={ci}&Nombre={row[1]}&Apellido={row[2]}&fecha_nac={row[3]}">Editar</a>&ensp;<a href="eliminar_alumno?ci={ci}">Eliminar</a>&ensp;<a href="inscribir_estudiante?ci={ci}&nombre={row[1]}&apellido={row[2]}">Inscribir Asignatura</a></td></tr>'
+        html += f'<td><a href="editar_alumno?Ci={ci}&Nombre={row[1]}&Apellido={row[2]}&fecha_nac={row[3]}" class="btn btn-success">Editar</a>&ensp;<a href="eliminar_alumno?ci={ci}" class="btn btn-danger">Eliminar</a>&ensp;<a href="inscribir_estudiante?ci={ci}&nombre={row[1]}&apellido={row[2]}" class="btn btn-warning">Inscribir Asignatura</a></td></tr>'
         
     html += '</table>'
 
@@ -64,8 +64,8 @@ def select_asignatura():
     html = '<table><tr><th>Sigla</th><th>Nombre</th><th>Semestre</th><th>Acciones</th></tr>'
     for row in cursor:
         html += f'<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td>'
-        html += f'<td><a href="editar_asignatura?Sigla={row[0]}&Nombre={row[1]}&Semestre={row[2]}">Editar</a></td>'
-        html += f'<td><a href="eliminar_asignatura?sigla={row[0]}">Eliminar</a></td></tr>'
+        html += f'<td><a href="editar_asignatura?Sigla={row[0]}&Nombre={row[1]}&Semestre={row[2]}" class="btn btn-success">Editar</a></td>'
+        html += f'<td><a href="eliminar_asignatura?sigla={row[0]}" class="btn btn-danger">Eliminar</a></td></tr>'
     html += '</table>'
 
     # Cerramos la conexión
@@ -160,8 +160,8 @@ def select_asignatura_estudiante():
     html = '<table><tr><th>Sigla</th><th>Ci</th><th>Nombre</th><th>Apellido</th><th>Nota 1</th><th>Nota 2</th><th>Nota Final</th><th>Acciones</th></tr>'
     for row in cursor:
         html += f'<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td><td>{row[4]}</td><td>{row[5]}</td><td>{row[6]}</td>'
-        html += f'<td><a href="editar_notas?sigla={row[0]}&ci={row[1]}&nombre={row[2]}&apellido={row[3]}&nota1={row[4]}&nota2={row[5]}&notafinal={row[6]}">Editar</a></td>  &ensp;'
-        html += f'<td><a href="baja_estudiante?sigla={row[0]}&ci={row[1]}">Eliminar</a></td></tr>'
+        html += f'<td><a href="editar_notas?sigla={row[0]}&ci={row[1]}&nombre={row[2]}&apellido={row[3]}&nota1={row[4]}&nota2={row[5]}&notafinal={row[6]}" class="btn btn-success">Editar</a></td>  &ensp;'
+        html += f'<td><a href="baja_estudiante?sigla={row[0]}&ci={row[1]}" class="btn btn-danger">Eliminar</a></td></tr>'
     html += '</table>'
 
     # Cerramos la conexión
@@ -226,7 +226,7 @@ def alumno_asignatura(ci):
     html = '<table><tr><th>Sigla</th><th>Asignatura</th><th>Semestre</th><th>Nota 1</th><th>Nota 2</th><th>Nota Final</th><th>Acciones</th></tr>'
     for row in cursor:
         html += f'<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td><td>{row[4]}</td><td>{row[5]}</td>'
-        html += f'<td><a href="baja_estudiante?sigla={row[0]}&ci={row[6]}">Eliminar</a></td></tr>'
+        html += f'<td><a href="baja_estudiante?sigla={row[0]}&ci={row[6]}" class="btn btn-danger">Eliminar</a></td></tr>'
     html += '</table>'
 
     # Cerramos la conexión
@@ -248,7 +248,7 @@ def asignatura_alumno(sigla):
     html = '<table><tr><th>Ci</th><th>Nombre</th><th>Apellido</th><th>Fecha nacimiento</th><th>Nota 1</th><th>Nota 2</th><th>Nota Final</th><th>Acciones</th></tr>'
     for row in cursor:
         html += f'<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td><td>{row[4]}</td><td>{row[5]}</td><td>{row[6]}</td>'
-        html += f'<td><a href="baja_estudiante?sigla={row[7]}&ci={row[0]}">Eliminar</a></td></tr>'
+        html += f'<td><a href="baja_estudiante?sigla={row[7]}&ci={row[0]}" class="btn btn-danger">Eliminar</a></td></tr>'
     html += '</table>'
 
     # Cerramos la conexión
@@ -435,6 +435,8 @@ def main():
             # Cargamos el archivo HTML
             with open('alumno_asignatura.html', 'r') as file:
                 html = file.read()
+
+            html = html.format(tabla=select_asignatura_estudiante())
             # Creamos una respuesta HTTP para el cliente
             #print("pasa")
             response += html
@@ -443,6 +445,7 @@ def main():
             # Cargamos el archivo HTML
             with open('asignatura_alumno.html', 'r') as file:
                 html = file.read()
+                html = html.format(tabla=select_asignatura_estudiante())
             # Creamos una respuesta HTTP para el cliente
             #print("pasa")
             response += html
@@ -451,6 +454,7 @@ def main():
             # Cargamos el archivo HTML
             with open('nota_alumno.html', 'r') as file:
                 html = file.read()
+            html = html.format(tabla=select_asignatura_estudiante())
             # Creamos una respuesta HTTP para el cliente
             #print("pasa")
             response += html

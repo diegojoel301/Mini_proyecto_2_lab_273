@@ -9,7 +9,6 @@
 <body>
 	<h1>Inscribir Alumno</h1>
 
-    html = html.format(ci=ci, nombre=nombre, apellido=apellido)
 
 	<form method="POST" action="./inscribir_estudiante">
 		<label for="Ci">Ci:</label>
@@ -24,9 +23,9 @@
         <label for="sigla">Sigla Asignatura:</label>
 		<input type="text" id="sigla" name="sigla">
         <br>
-        <input type="submit" value="Enviar">
+        <input type="submit" value="Enviar" class="btn btn-primary"><br><br>
 
 	</form>
-	<a href="index.html">Volver</a>
+	<a href="index.html" class="btn btn-info">Volver</a>
 </body>
 </html>
