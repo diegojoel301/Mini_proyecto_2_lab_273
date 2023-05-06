@@ -160,7 +160,7 @@ def select_asignatura_estudiante():
     html = '<table><tr><th>Sigla</th><th>Ci</th><th>Nombre</th><th>Apellido</th><th>Nota 1</th><th>Nota 2</th><th>Nota Final</th><th>Acciones</th></tr>'
     for row in cursor:
         html += f'<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td><td>{row[4]}</td><td>{row[5]}</td><td>{row[6]}</td>'
-        html += f'<td><a href="editar_notas?sigla={row[0]}&ci={row[1]}&nombre={row[2]}&apellido={row[3]}&nota1={row[4]}&nota2={row[5]}&notafinal={row[6]}">Editar</a></td>	&ensp;'
+        html += f'<td><a href="editar_notas?sigla={row[0]}&ci={row[1]}&nombre={row[2]}&apellido={row[3]}&nota1={row[4]}&nota2={row[5]}&notafinal={row[6]}">Editar</a></td>  &ensp;'
         html += f'<td><a href="baja_estudiante?sigla={row[0]}&ci={row[1]}">Eliminar</a></td></tr>'
     html += '</table>'
 
@@ -211,6 +211,69 @@ def mostrar():
     # Reemplazar las variables en la cadena de formato
     html = html.format(html1=html1, html2=html2, html3=html3)
     return html
+
+#ver asignaturas de un alumno
+def alumno_asignatura(ci):
+    #SELECT xd.Sigla, xs.Nombre, xs.Apellido, xd.nota1, xd.nota2, xd.notafinal FROM alumno_asignatura xd, alumno xs WHERE xd.Ci = xs.Ci;
+    # Conexión a la base de datos
+    conn = sqlite3.connect('academico.db')
+
+    # Consulta de todas las asignaturas
+    cursor = conn.execute("SELECT a.Sigla, a.Nombre, a.Semestre, aa.nota1, aa.nota2, aa.notafinal, aa.Ci FROM alumno_asignatura aa JOIN asignatura a ON aa.Sigla = a.Sigla WHERE aa.Ci = ?", (ci,))
+
+
+    # Generación de tabla HTML con los resultados
+    html = '<table><tr><th>Sigla</th><th>Asignatura</th><th>Semestre</th><th>Nota 1</th><th>Nota 2</th><th>Nota Final</th><th>Acciones</th></tr>'
+    for row in cursor:
+        html += f'<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td><td>{row[4]}</td><td>{row[5]}</td>'
+        html += f'<td><a href="baja_estudiante?sigla={row[0]}&ci={row[6]}">Eliminar</a></td></tr>'
+    html += '</table>'
+
+    # Cerramos la conexión
+    conn.close()
+
+    return html
+
+#ver alumnos de asignatura
+def asignatura_alumno(sigla):
+    #SELECT xd.Sigla, xs.Nombre, xs.Apellido, xd.nota1, xd.nota2, xd.notafinal FROM alumno_asignatura xd, alumno xs WHERE xd.Ci = xs.Ci;
+    # Conexión a la base de datos
+    conn = sqlite3.connect('academico.db')
+
+    # Consulta de todas las asignaturas
+    cursor = conn.execute("SELECT a.Ci, a.Nombre, a.Apellido, a.fecha_nac, aa.nota1, aa.nota2, aa.notafinal, aa.Sigla FROM alumno_asignatura aa JOIN alumno a ON aa.Ci = a.Ci WHERE aa.Sigla = ?", (sigla,))
+
+
+    # Generación de tabla HTML con los resultados
+    html = '<table><tr><th>Ci</th><th>Nombre</th><th>Apellido</th><th>Fecha nacimiento</th><th>Nota 1</th><th>Nota 2</th><th>Nota Final</th><th>Acciones</th></tr>'
+    for row in cursor:
+        html += f'<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td><td>{row[4]}</td><td>{row[5]}</td><td>{row[6]}</td>'
+        html += f'<td><a href="baja_estudiante?sigla={row[7]}&ci={row[0]}">Eliminar</a></td></tr>'
+    html += '</table>'
+
+    # Cerramos la conexión
+    conn.close()
+
+    return html
+
+def nota_alumno(sigla, ci):
+    # Conexión a la base de datos
+    conn = sqlite3.connect('academico.db')
+
+    # Consulta de las notas del alumno en una asignatura
+    cursor = conn.execute("SELECT a.Ci, a.Nombre, a.Apellido, aa.nota1, aa.nota2, aa.notafinal, aa.Sigla FROM alumno_asignatura aa JOIN alumno a ON aa.Ci = a.Ci WHERE aa.Sigla = ? AND aa.Ci = ?", (sigla, ci))
+
+    # Generación de tabla HTML con los resultados
+    html = '<table><tr><th>Ci</th><th>Nombre</th><th>Apellido</th><th>Nota 1</th><th>Nota 2</th><th>Nota Final</th><th>Materia sigla</th></tr>'
+    for row in cursor:
+        html += f'<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td><td>{row[4]}</td><td>{row[5]}</td><td>{row[6]}</td>'
+    html += '</table>'
+
+    # Cerramos la conexión
+    conn.close()
+
+    return html
+
 
 def main():
     # Creamos un objeto de socket
@@ -367,7 +430,30 @@ def main():
             html = html.format(ci=ci, nombre=nombre, apellido=apellido)
 
             print(ci, nombre, apellido)
-
+        elif request.startswith('GET /alumno_asignatura.html'):
+            #consultar asignaturas de alumno x
+            # Cargamos el archivo HTML
+            with open('alumno_asignatura.html', 'r') as file:
+                html = file.read()
+            # Creamos una respuesta HTTP para el cliente
+            #print("pasa")
+            response += html
+        elif request.startswith('GET /asignatura_alumno.html'):
+            #consultar alumnos de asignatura x
+            # Cargamos el archivo HTML
+            with open('asignatura_alumno.html', 'r') as file:
+                html = file.read()
+            # Creamos una respuesta HTTP para el cliente
+            #print("pasa")
+            response += html
+        elif request.startswith('GET /nota_alumno.html'):
+            #consultar alumnos de asignatura x
+            # Cargamos el archivo HTML
+            with open('nota_alumno.html', 'r') as file:
+                html = file.read()
+            # Creamos una respuesta HTTP para el cliente
+            #print("pasa")
+            response += html
         else:
             html=mostrar()
 
@@ -480,6 +566,55 @@ def main():
 
             # Agregamos un mensaje de confirmación al HTML
             html += '<p>Asignatura editado correctamente.</p>'
+
+        #para mostrar asignaturas de un alumno x
+        if request.startswith('POST /alumno_asignatura'):
+            # Si la solicitud es un POST, obtenemos los datos del formulario
+            envio = request.split('\r\n')[-1]
+            Ci = envio.split('&')[0].split('=')[1]
+
+            # Realizamos la consulta
+            tabla=alumno_asignatura(Ci)
+
+            # Cargamos el archivo HTML
+            with open('alumno_asignatura.html', 'r') as file:
+                html = file.read()
+
+            # Reemplazar las variables en la cadena de formato
+            html = html.format(tabla=tabla)
+
+        #para alumnos de asignatura x
+        if request.startswith('POST /asignatura_alumno'):
+            # Si la solicitud es un POST, obtenemos los datos del formulario
+            envio = request.split('\r\n')[-1]
+            Sigla = envio.split('&')[0].split('=')[1]
+
+            # Realizamos la consulta
+            tabla=asignatura_alumno(Sigla)
+
+            # Cargamos el archivo HTML
+            with open('asignatura_alumno.html', 'r') as file:
+                html = file.read()
+
+            # Reemplazar las variables en la cadena de formato
+            html = html.format(tabla=tabla)
+
+        #para alumnos de asignatura x
+        if request.startswith('POST /nota_alumno'):
+            # Si la solicitud es un POST, obtenemos los datos del formulario
+            envio = request.split('\r\n')[-1]
+            Sigla = envio.split('&')[0].split('=')[1]
+            Ci = envio.split('&')[1].split('=')[1]
+
+            # Realizamos la consulta
+            tabla=nota_alumno(Sigla, Ci)
+
+            # Cargamos el archivo HTML
+            with open('nota_alumno.html', 'r') as file:
+                html = file.read()
+
+            # Reemplazar las variables en la cadena de formato
+            html = html.format(tabla=tabla)
 
         # Creamos una respuesta HTTP para el cliente
         response = 'HTTP/1.1 200 OK\nContent-Type: text/html\n\n'
